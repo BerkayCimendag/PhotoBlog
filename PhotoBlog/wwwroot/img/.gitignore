@@ -1,0 +1,7 @@
+﻿#İgnore everything
+*
+
+#But not these files
+!.gitignore
+!sample.jpg
+
