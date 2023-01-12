@@ -3,19 +3,20 @@
     ViewData["Title"] = "Home Page";
 }
 
-@foreach (var post in Model)
-{
-    <div class="post">
-        <h2>@post.Title</h2>
-        <div>
-            <img src="~/img/@post.Photo" alt="@post.Title" />
+<div class="posts">
+    @foreach (var post in Model)
+    {
+        <div class="post">
+            <h2 class="post-title">@post.Title</h2>
+            <div class="post-image">
+                <img src="~/img/@post.Photo" alt="@post.Title" />
+            </div>
+            <div class="post-time">
+                <span data-post-time="@post.CreatedTime.ToString("s")"></span>
+            </div>
+            <p class="post-desc">
+                @post.Description
+            </p>
         </div>
-        <div>
-            Posted on : @post.CreatedTime
-        </div>
-        <p>
-            @post.Description
-        </p>
-    </div>
-    <hr />
-}
+    }
+</div>

@@ -57,15 +57,17 @@ namespace PhotoBlog.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(PostViewModel vm)
+        public async Task<IActionResult> Create(CreateViewModel vm)
         {
+
+
             if (ModelState.IsValid)
             {
                 var post = new Post()
                 {
                     Title = vm.Title,
                     Description = vm.Description,
-                    Photo = DosyaYukle(vm.Photo)
+                    Photo = SavePhoto(vm.Photo!)
                 };
                 _context.Add(post);
                 await _context.SaveChangesAsync();
@@ -74,10 +76,10 @@ namespace PhotoBlog.Areas.Admin.Controllers
             return View(vm);
         }
         //https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-6.0
-        private string DosyaYukle(IFormFile photo)
+        private string SavePhoto(IFormFile photo)
         {
             var fileName = Guid.NewGuid() + Path.GetExtension(photo.FileName);
-            string filePath = Path.Combine(_env.WebRootPath,"img", fileName);
+            string filePath = Path.Combine(_env.WebRootPath, "img", fileName);
 
             using (var stream = System.IO.File.Create(filePath))
             {
@@ -100,7 +102,13 @@ namespace PhotoBlog.Areas.Admin.Controllers
             {
                 return NotFound();
             }
-            return View(post);
+            var vm = new EditViewModel()
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Description = post.Description
+            };
+            return View(vm);
         }
 
         // POST: Admin/Posts/Edit/5
@@ -108,35 +116,33 @@ namespace PhotoBlog.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Photo,CreatedTime")] Post post)
+        public async Task<IActionResult> Edit(EditViewModel vm)
         {
-            if (id != post.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
+                var post = await _context.Posts.FindAsync(vm.Id);
+                if (post == null)
                 {
-                    _context.Update(post);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                post.Title = vm.Title;
+                post.Description = vm.Description;
+
+                if (vm.Photo != null)
                 {
-                    if (!PostExists(post.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    DeletePhoto(post.Photo);
+                    post.Photo = SavePhoto(vm.Photo);  
                 }
+
+                await _context.SaveChangesAsync();
+
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(post);
+            return View(vm);
         }
+
+
 
         // GET: Admin/Posts/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -168,11 +174,27 @@ namespace PhotoBlog.Areas.Admin.Controllers
             var post = await _context.Posts.FindAsync(id);
             if (post != null)
             {
+                DeletePhoto(post.Photo);
                 _context.Posts.Remove(post);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        private void DeletePhoto(string photo)
+        {
+            if (string.IsNullOrEmpty(photo))
+            {
+                return;
+            }
+            string filePath = Path.Combine(_env.WebRootPath, "img", photo);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
         }
 
         private bool PostExists(int id)
