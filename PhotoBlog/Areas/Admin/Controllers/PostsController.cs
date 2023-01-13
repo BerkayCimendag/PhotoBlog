@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Packaging;
 using PhotoBlog.Areas.Admin.Models;
 using PhotoBlog.Data;
 
@@ -49,7 +50,22 @@ namespace PhotoBlog.Areas.Admin.Controllers
         // GET: Admin/Posts/Create
         public IActionResult Create()
         {
+            LoadTags();
             return View();
+        }
+
+        private void LoadTags(HashSet<string>? postedTags = null)
+        {
+            var tags = _context.Tags.Select(x=>x.Name).ToHashSet();
+            if (postedTags != null)
+            {
+                tags.AddRange(postedTags);
+            }
+            ViewBag.Tags =tags.Select(x=>new SelectListItem()
+            {
+                Text= x,
+                Value = x
+            }).OrderBy(x=>x.Text);
         }
 
         // POST: Admin/Posts/Create
@@ -59,20 +75,34 @@ namespace PhotoBlog.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateViewModel vm)
         {
-
+            
 
             if (ModelState.IsValid)
             {
+                List<Tag> tags= new List<Tag>();
+                foreach (string tagName in vm.Tags!)
+                {
+                    var tag = _context.Tags.FirstOrDefault(x=>x.Name == tagName);
+
+                    if (tag == null)
+                    {
+                        tag = new Tag() { Name = tagName };
+                    }
+                    
+                    tags.Add(tag);
+                }
                 var post = new Post()
                 {
                     Title = vm.Title,
                     Description = vm.Description,
-                    Photo = SavePhoto(vm.Photo!)
+                    Photo = SavePhoto(vm.Photo!),
+                    Tags = tags
                 };
                 _context.Add(post);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            LoadTags(vm.Tags);
             return View(vm);
         }
         //https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-6.0

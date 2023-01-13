@@ -12,5 +12,7 @@ namespace PhotoBlog.Areas.Admin.Models
         public string? Description { get; set; }
         [ValidImage(MaxFileSize =2)]
         public IFormFile Photo { get; set; } = null!;
+
+        public HashSet<string>? Tags { get; set; } = new HashSet<string>();
     }
 }

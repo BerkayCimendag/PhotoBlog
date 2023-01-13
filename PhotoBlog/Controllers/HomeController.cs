@@ -19,7 +19,7 @@ namespace PhotoBlog.Controllers
         public IActionResult Index()
         {
 
-            var posts = _db.Posts.OrderByDescending(x => x.CreatedTime).ToList();
+            var posts = _db.Posts.Include(x=>x.Tags).OrderByDescending(x => x.CreatedTime).ToList();
             return View(posts);
         }
 
