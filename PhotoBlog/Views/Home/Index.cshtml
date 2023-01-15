@@ -15,7 +15,7 @@
                 <div class="post-tags">
                     @foreach (var tag in post.Tags)
                     {
-                        <a href="#!">#@tag.Name</a>
+                        <a  href="?tagName=@tag.Name">@tag.Name</a>
                     }
                 </div>
                 <div class="post-time">

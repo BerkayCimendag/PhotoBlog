@@ -16,10 +16,14 @@ namespace PhotoBlog.Controllers
             _db = db;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string tagName)
         {
-
+            
             var posts = _db.Posts.Include(x=>x.Tags).OrderByDescending(x => x.CreatedTime).ToList();
+            if (!string.IsNullOrEmpty(tagName))
+            {
+                posts = posts.Where(p => p.Tags.Any(t => t.Name == tagName)).ToList();
+            }
             return View(posts);
         }
 
@@ -27,6 +31,8 @@ namespace PhotoBlog.Controllers
         {
             return View();
         }
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
