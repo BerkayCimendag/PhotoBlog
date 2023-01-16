@@ -170,8 +170,6 @@ namespace PhotoBlog.Areas.Admin.Controllers
                 post.Description = vm.Description;
 
 
-
-
                 List<Tag> tags = new List<Tag>();
                 foreach (string tagName in vm.Tags!)
                 {
