@@ -32,6 +32,17 @@ namespace PhotoBlog.Controllers
             return View();
         }
 
+        public IActionResult Search(string tagSearch)
+        {
+            ViewBag.Search = tagSearch; 
+            var posts = _db.Posts.Include(x => x.Tags).OrderByDescending(x => x.CreatedTime).ToList();
+            if (!string.IsNullOrEmpty(tagSearch))
+            {
+                posts = posts.Where(p => p.Tags.Any(t => t.Name == tagSearch)).ToList();
+            }
+            return View("Index",posts);
+        }
+
 
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

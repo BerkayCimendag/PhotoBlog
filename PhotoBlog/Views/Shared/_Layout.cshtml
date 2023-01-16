@@ -27,6 +27,11 @@
                         </li>
                     </ul>
                     <ul class="navbar-nav">
+                        <li class="me-4 nav-item">
+                            <form asp-controller="Home" asp-action="Search" method="get" class="form-inline my-2 my-lg-0">
+                                <input name="tagSearch" type="search" placeholder="Search" class="form-control" value="@ViewBag.Search" />
+                            </form>
+                        </li>
                         <li class="nav-item">
                             <a class="btn btn-outline-dark" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Administration</a>
                         </li>
